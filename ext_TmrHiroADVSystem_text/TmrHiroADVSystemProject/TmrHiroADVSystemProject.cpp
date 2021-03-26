@@ -15,6 +15,12 @@ int E(const char* msg)
     return -1;
 }
 
+void WriteLine(BYTE* text, DWORD size, FILE* fp)
+{
+    fwrite(text, size, 1, fp);
+    fwrite("\r\n", 2, 1, fp);
+}
+
 #define _unpack_srp
 #ifdef _unpack_system
 int main(int argc, char* argv[])
@@ -38,8 +44,7 @@ int main(int argc, char* argv[])
     {
         WORD CharSize = *(WORD*)(FileBuff + pos);
         pos += sizeof(WORD);
-        fwrite((FileBuff + pos), CharSize, 1, fp);
-        fwrite("\r\n", 2, 1, fp);
+        WriteLine((FileBuff + pos), CharSize, fp);
         pos += CharSize;
     }
     fclose(fp);
@@ -93,11 +98,9 @@ int main(int argc, char* argv[])
 
         DWORD text_size = code_size - sizeof(DWORD);
         BYTE* text_buff = (FileBuff + pos);
-        if (IsText(text_buff, text_size) && (code == 0x150050 || (code & 0xFF000000) == 0))
-        {
-            fwrite(text_buff, text_size, 1, fp);
-            fwrite("\r\n", 2, 1, fp);
-        }
+        //if (code == 0x00150050 || code == 0x00000000 || code == 0x00030000 || code == 0x00020000 || code == 0x00060000)
+        if(code == 0x00150050 || (code & 0x0000FFFF) == 0)
+            WriteLine(text_buff, text_size, fp);
         pos += text_size;
 
     }
